@@ -1,0 +1,3 @@
+Place files in this folder, run python.
+Done
+All files are marked with EXIF date

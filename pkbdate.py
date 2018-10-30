@@ -1,8 +1,7 @@
 import os
 import re
 import subprocess
-import piexif
-from PIL import Image
+
 
 '''problem to be resolved
 1. mp4 files are skipped => may need to manipulate thru exiftool directly in command line
@@ -42,36 +41,6 @@ def checkExifDateExist( file_name ):
         return False
 
 
-
-print exifToolextractField("-ExifIFD:DateTimeOriginal", "hasExif.mp4")
-print checkExifDateExist("hasExif.mp4")
-exit()
-
-def setNullExifTime( composed_date ):
-    zeroth_ifd = {piexif.ImageIFD.Make: u"Canon",
-              piexif.ImageIFD.XResolution: (96, 1),
-              piexif.ImageIFD.YResolution: (96, 1),
-              piexif.ImageIFD.Software: u"piexif"
-              }
-    exif_ifd = {piexif.ExifIFD.DateTimeOriginal: composed_date,
-            piexif.ExifIFD.LensMake: u"LensMake",
-            piexif.ExifIFD.Sharpness: 65535,
-            piexif.ExifIFD.LensSpecification: ((1, 1), (1, 1), (1, 1), (1, 1)),
-            }
-    gps_ifd = {piexif.GPSIFD.GPSVersionID: (2, 0, 0, 0),
-           piexif.GPSIFD.GPSAltitudeRef: 1,
-           piexif.GPSIFD.GPSDateStamp: composed_date,
-           }
-    first_ifd = {piexif.ImageIFD.Make: u"pkbdate_conversion",
-             piexif.ImageIFD.XResolution: (40, 1),
-             piexif.ImageIFD.YResolution: (40, 1),
-             piexif.ImageIFD.Software: u"piexif"
-             }
-
-#exif_dict = {"0th":zeroth_ifd, "Exif":exif_ifd, "GPS":gps_ifd, "1st":first_ifd}
-    exif_dict = {"0th":zeroth_ifd, "Exif":exif_ifd}
-    return exif_dict
-
 def composeDateStr( date_dct ):
     composed_date="{0}:{1}:{2} {3}:{4}:{5}".format(date_dct['yy'],date_dct['mm'],date_dct['dd'],
                                                   date_dct['hh'],date_dct['mn'],date_dct['sc'])
@@ -82,7 +51,7 @@ def composeDateStr( date_dct ):
 
 '''"0Y1M20D-20160520-1-001"'''
 pkb_jpg=re.compile("[\d]+Y[\d]+M[\d]+D-([\d]+)-[\d]+-[\d]+.[jJ][pegPEG]+")
-pkb_png=re.compile("([\d]+Y[\d]+M[\d]+D-([\d]+)-[\d]+-[\d]+).[PNGpng]+")
+pkb_png=re.compile("[\d]+Y[\d]+M[\d]+D-([\d]+)-[\d]+-[\d]+.[PNGpng]+")
 pkb_mp4=re.compile("([\d]+Y[\d]+M[\d]+D-([\d]+)-[\d]+-[\d]+).[mp4]+")
 
 file_list = []
@@ -94,39 +63,29 @@ date_dct={
     'mn':"00",
     'sc':"00",
 }
-for dirPath, dirNames, fileNames in os.walk("pngdata/"):
+for dirPath, dirNames, fileNames in os.walk("scan_fold/"):
     #print dirPath
     for (i,f) in enumerate(fileNames):
 
         print '----------------START-------------({0},{1})--'.format(i,len(fileNames))
         ''' Read PNG, save to JPG'''
-        png_exist=pkb_png.search(f)
-        if png_exist:
-            full_path = os.path.join(dirPath,f)
-            img = Image.open(full_path)
-            f = png_exist.group(1)+".jpg"
-
-            sv_full_path = os.path.join(dirPath,f)
-            print "===Convert PNG to JPG=== "+f
-            img.save(sv_full_path)
-
-        ''' Read JPG, convert to exif embedded JPG'''
+        png_exist = pkb_png.search(f)
         jpg_exist = pkb_jpg.search(f)
         mp4_exist = pkb_mp4.search(f)
-        if jpg_exist:
-            print "JPG File to be Handled: "+ f
+        if jpg_exist or png_exist:
+            print "JPG/PNG File to be Handled: "+ f
             full_path = os.path.join(dirPath,f)
 
 
-            # Extract existing exif
-            exif_dict = piexif.load(full_path)
+            dateTimeOrigin = exifToolextractField("-DateTimeOriginal", full_path)
 
-            if piexif.ExifIFD.DateTimeOriginal in exif_dict["Exif"]:
 
-                exif_date = exif_dict["Exif"][piexif.ExifIFD.DateTimeOriginal]
-                date_time_ar = exif_date.split()
-                date_ar = date_time_ar[0].split(':')
-                time_ar = date_time_ar[1].split(':')
+            if len(dateTimeOrigin) >0 :
+
+                date_time_ar = dateTimeOrigin.split()
+                date_ar = date_time_ar[-2].split(':')
+                time_ar = date_time_ar[-1].split(':')
+                #print (date_time_ar, date_ar, time_ar)
                 date_dct['yy'] = date_ar[0]
                 date_dct['mm'] = date_ar[1]
                 date_dct['dd'] = date_ar[2]
@@ -135,13 +94,14 @@ for dirPath, dirNames, fileNames in os.walk("pngdata/"):
                 date_dct['mn'] = time_ar[1]
                 date_dct['sc'] = time_ar[2]
 
-                print "Date exists: " + exif_date
+                print "Date exists: " + str(date_ar) + str(time_ar)
                 print "No further actions"
 
             else:
-                if exif_dict == None:
-                    print "EXIF is NONE"
-                file_name_date=jpg_exist.group(1)
+                if jpg_exist:
+                    file_name_date=jpg_exist.group(1)
+                elif png_exist:
+                    file_name_date=png_exist.group(1)
                 date_dct['yy'] = file_name_date[0:4]
                 date_dct['mm'] = file_name_date[4:6]
                 date_dct['dd'] = file_name_date[6:8]
@@ -152,15 +112,10 @@ for dirPath, dirNames, fileNames in os.walk("pngdata/"):
                 '''
                 composed_date= composeDateStr(date_dct)
                 print "Date NOT exists: composed date: " + composed_date
+                exifToolsetField('-CreateDate="{0}"'.format(composed_date), full_path)
+                exifToolsetField('-ModifyDate="{0}"'.format(composed_date), full_path)
+                exifToolsetField('-dateTimeOriginal="{0}"'.format(composed_date), full_path)
 
-                #write EXIF in
-                im = Image.open(full_path)
-
-
-
-                exif_bytes = piexif.dump(setNullExifTime(composed_date))
-                im.save(full_path, exif=exif_bytes)
-                print "jpg saved"
 
         elif mp4_exist:
             print "mp4 File to be Handled: "+ f
