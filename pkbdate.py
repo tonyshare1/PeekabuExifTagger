@@ -10,6 +10,7 @@ import subprocess
 
 2. png file comes in but can't be processed by piexif
    could save to jpg first & encode the exif to attach on it
+   ==> need to save png to jpg
 
 3. may directly call exif tool without importing piexif????
 
@@ -68,12 +69,12 @@ for dirPath, dirNames, fileNames in os.walk("scan_fold/"):
     for (i,f) in enumerate(fileNames):
 
         print '----------------START-------------({0},{1})--'.format(i,len(fileNames))
-        ''' Read PNG, save to JPG'''
+
         png_exist = pkb_png.search(f)
         jpg_exist = pkb_jpg.search(f)
         mp4_exist = pkb_mp4.search(f)
-        if jpg_exist or png_exist:
-            print "JPG/PNG File to be Handled: "+ f
+        if jpg_exist or png_exist or mp4_exist:
+            print "JPG/PNG/MP4 File to be Handled: "+ f
             full_path = os.path.join(dirPath,f)
 
 
@@ -102,6 +103,9 @@ for dirPath, dirNames, fileNames in os.walk("scan_fold/"):
                     file_name_date=jpg_exist.group(1)
                 elif png_exist:
                     file_name_date=png_exist.group(1)
+                elif mp4_exist:
+                    file_name_date=mp4_exist.group(2)
+
                 date_dct['yy'] = file_name_date[0:4]
                 date_dct['mm'] = file_name_date[4:6]
                 date_dct['dd'] = file_name_date[6:8]
@@ -117,9 +121,13 @@ for dirPath, dirNames, fileNames in os.walk("scan_fold/"):
                 exifToolsetField('-dateTimeOriginal="{0}"'.format(composed_date), full_path)
 
 
-        elif mp4_exist:
+        elif 0 : #mp4_exist:
             print "mp4 File to be Handled: "+ f
             full_path = os.path.join(dirPath,f)
+
+            dateTimeOrigin = exifToolextractField("-DateTimeOriginal", full_path)
+
+
             file_name_date=mp4_exist.group(2)
             print file_name_date
             date_dct['yy'] = file_name_date[0:4]
