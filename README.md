@@ -1,9 +1,9 @@
 # Peekabu Photo EXIF modifier
 
   Some user of Peekabu backup their photos to their own disk.
-    [ https://peekaboomoments.com/ ]
-    [ How to backup (Chinese Only): https://www.ptt.cc/bbs/BabyMother/M.1492746862.A.F94.html ] 
-    [ Backup SW: https://goo.gl/2mZpuk ]
+    https://peekaboomoments.com/
+    How to backup (Chinese Only): https://www.ptt.cc/bbs/BabyMother/M.1492746862.A.F94.html
+    Backup SW: https://goo.gl/2mZpuk
   These backed up photo may or may NOT have proper EXIF, but they do have proper DATE file name.
     File names may looks like:
     *Y*M*D-YYYYMMDD-*-***.jpg
