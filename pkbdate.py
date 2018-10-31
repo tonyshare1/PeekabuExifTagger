@@ -49,6 +49,12 @@ def composeDateStr( date_dct ):
 
 
 
+'''Change to current directory '''
+print "Change Directory to " + os.path.dirname(os.path.abspath(__file__))
+os.chdir(os.path.dirname(os.path.abspath(__file__)) )
+
+
+
 
 '''"0Y1M20D-20160520-1-001"'''
 pkb_jpg=re.compile("[\d]+Y[\d]+M[\d]+D-([\d]+)-[\d]+-[\d]+.[jJ][pegPEG]+")
@@ -138,4 +144,4 @@ for dirPath, dirNames, fileNames in os.walk("scan_fold/"):
 
                     print "PNG additional modification: FileModifyDate, FileCreateDate"
 
-print "Work complete"                
+print "Work complete"
