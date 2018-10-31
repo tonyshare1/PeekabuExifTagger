@@ -120,36 +120,22 @@ for dirPath, dirNames, fileNames in os.walk("scan_fold/"):
                 exifToolsetField('-ModifyDate="{0}"'.format(composed_date), full_path)
                 exifToolsetField('-dateTimeOriginal="{0}"'.format(composed_date), full_path)
 
+                print "JPG/PNG/MP4 Exif-modified"
 
-        elif 0 : #mp4_exist:
-            print "mp4 File to be Handled: "+ f
-            full_path = os.path.join(dirPath,f)
+                if png_exist:
+                    '''
+                    Write all Date
+                    exiftool "-system:FileModifyDate"
+                    exiftool -time:all -a -G0:1 -s a.mp4
+                    [File:System]   FileModifyDate                  : 2013:04:28 09:35:16+12:00
+                    [File:System]   FileAccessDate                  : 2013:04:29 14:06:03+12:00
+                    [File:System]   FileCreateDate                  : 2013:04:29 14:06:03+12:00
+                    '''
+                    exifToolsetField('-system:FileModifyDate="{0}"'.format(composed_date), full_path)
+                    #exifToolsetField('-system:FileAccessDate="{0}"'.format(composed_date), full_path)
+                    #in-accessible
+                    exifToolsetField('-system:FileCreateDate="{0}"'.format(composed_date), full_path)
 
-            dateTimeOrigin = exifToolextractField("-DateTimeOriginal", full_path)
+                    print "PNG additional modification: FileModifyDate, FileCreateDate"
 
-
-            file_name_date=mp4_exist.group(2)
-            print file_name_date
-            date_dct['yy'] = file_name_date[0:4]
-            date_dct['mm'] = file_name_date[4:6]
-            date_dct['dd'] = file_name_date[6:8]
-
-            composed_date = composeDateStr(date_dct)
-            print "Date NOT exists: composed date: " + composed_date
-
-            #exiftool -xmp:CreateDate="2016:10:23 20:06:34.33" vid.mp4
-            #exiftool -xmp:ModifyDate="2016:10:23 20:06:34.33" vid.mp4
-            #exiftool -xmp:dateTimeOriginal="2016:10:23 20:06:34.33-08:00" vid.mp4
-            #exiftool -QuickTime:ModifyDate="2016:10:23 20:06:34.33-08:00" vid.mp4
-
-            #all time
-            #exiftool -*Date="2016:10:23 20:06:34.33-08:00" vid.mp4
-
-            #subprocess.check_call(["exiftool", '-xmp:CreateDate="{0}"'.format(composed_date), full_path ,'-overwrite_original'])
-            #subprocess.check_call(["exiftool", '-xmp:ModifyDate="{0}"'.format(composed_date), full_path ,'-overwrite_original'])
-            #subprocess.check_call(["exiftool", '-xmp:dateTimeOriginal="{0}"'.format(composed_date), full_path ,'-overwrite_original'])
-
-            exifToolsetField('-*Date="{0}"'.format(composed_date), full_path)
-            #subprocess.check_call(["exiftool", '-*Date="{0}"'.format(composed_date), full_path ,'-overwrite_original'])
-            print "mp4 saved"
-        #print '----------------END---------------'
+print "Work complete"                
