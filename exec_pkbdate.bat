@@ -1,2 +1,2 @@
-python pkbdate.py
+pkbdate.exe
 pause
