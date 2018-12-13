@@ -1,7 +1,7 @@
 import os
 import re
 import subprocess
-
+import platform
 
 '''problem to be resolved
 1. mp4 files are skipped => may need to manipulate thru exiftool directly in command line
@@ -15,14 +15,25 @@ import subprocess
 3. may directly call exif tool without importing piexif????
 
 '''
+os_type = platform.system()
+exiftool_cmd = "exiftool"
+if os_type == "Windows":   #WIN
+    exiftool_cmd = "./exiftool_win"
+elif os_type == "Darwin":  #OSX
+    exiftool_cmd = "exiftool"
+    #have no stand alone bin
+  
+
+
+
 
 #exiftool -ExifIFD:DateTimeOriginal hasExif.JPG
 def exifToolextractField(field_item, file_name):
-    out = subprocess.check_output(["exiftool", field_item, file_name])
+    out = subprocess.check_output([exiftool_cmd, field_item, file_name])
     return out
 
 def exifToolsetField(field_item, file_name):
-    out = subprocess.check_output(["exiftool", field_item, file_name,'-overwrite_original'])
+    out = subprocess.check_output([exiftool_cmd, field_item, file_name,'-overwrite_original'])
 
 def checkExifDateExist( file_name ):
     date_pat = re.compile("[\w]+([\d]+\:[\d]+\:[\d]+ [\d]+\:[\d]+\:[\d]+)")
