@@ -21,10 +21,15 @@
 
 # Require
   1. Python 2.7
-  2. Exiftool, need to install 
+  2. Exiftool, (Windows user not required, already placed 1 copy, exiftool_win. 
+     Mac osX user needs to install) 
      https://www.sno.phy.queensu.ca/~phil/exiftool/
 
 # How to use?
   1. Place all backed up file inside scan_fold
-  2. run > python pkbdate.py
+  2. In Windows: execute exec_pkbdate.bat
+     In mac osX: run in terminal > python pkbdate.py
   3. Wait till it's finish
+
+# Credit:
+  Exiftool belongs to https://www.sno.phy.queensu.ca/~phil/exiftool/
