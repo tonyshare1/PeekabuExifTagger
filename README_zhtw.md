@@ -18,16 +18,19 @@
   png包含png, PNG.  
   mp4包含mp4, MP4.  
 
-
+# Before You use
+  + 只要你的作業系統是64bit的Windows 8/10可以用這個方法
+  + 簡單的用法是: 將要處理的照片放入scan_fold中
+  + 然後執行exec_pkbdate.bat
 
 # Require
-  1. Python 2.7 (需要自行安裝)
+  1. Python 2.7 (MacOSX需要自行安裝)
   2. Exiftool, (WINDOWS不需安裝, macosX需要自行安裝)
      https://www.sno.phy.queensu.ca/~phil/exiftool/
 
 # 如何使用
   1. 將要處理的照片放入scan_fold
-  2. in WINDOWS: 執行exec_pkbdate.bat  
+  2. in WINDOWS: 執行exec_pkbdate.bat 或是pkbdate.exe    
      in MAC: 在terminal中執行: python pkbdate.py
   3. Wait till it's finish
 
