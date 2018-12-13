@@ -2,7 +2,7 @@ import os
 import re
 import subprocess
 import platform
-
+import imghdr
 '''problem to be resolved
 1. mp4 files are skipped => may need to manipulate thru exiftool directly in command line
     done by executing
@@ -71,7 +71,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)) )
 pkb_jpg=re.compile("[\d]+Y[\d]+M[\d]+D-([\d]+)-[\d]+-[\d]+.[jJ][pegPEG]+")
 pkb_png=re.compile("[\d]+Y[\d]+M[\d]+D-([\d]+)-[\d]+-[\d]+.[PNGpng]+")
 pkb_mp4=re.compile("([\d]+Y[\d]+M[\d]+D-([\d]+)-[\d]+-[\d]+).[mp4]+")
-
+valid_type = []
 file_list = []
 date_dct={
     'yy':"2000",
@@ -87,6 +87,8 @@ for dirPath, dirNames, fileNames in os.walk("scan_fold/"):
 
         print '----------------START-------------({0},{1})--'.format(i,len(fileNames))
 
+        
+
         png_exist = pkb_png.search(f)
         jpg_exist = pkb_jpg.search(f)
         mp4_exist = pkb_mp4.search(f)
@@ -94,65 +96,70 @@ for dirPath, dirNames, fileNames in os.walk("scan_fold/"):
             print "JPG/PNG/MP4 File to be Handled: "+ f
             full_path = os.path.join(dirPath,f)
 
+            
+            if ( imghdr.what(full_path) == None ) and (not mp4_exist):
+                print "invalid filetype"
+            else: 
 
-            dateTimeOrigin = exifToolextractField("-DateTimeOriginal", full_path)
+
+                dateTimeOrigin = exifToolextractField("-DateTimeOriginal", full_path)
 
 
-            if len(dateTimeOrigin) >0 :
+                if len(dateTimeOrigin) >0 :
 
-                date_time_ar = dateTimeOrigin.split()
-                date_ar = date_time_ar[-2].split(':')
-                time_ar = date_time_ar[-1].split(':')
-                #print (date_time_ar, date_ar, time_ar)
-                date_dct['yy'] = date_ar[0]
-                date_dct['mm'] = date_ar[1]
-                date_dct['dd'] = date_ar[2]
+                    date_time_ar = dateTimeOrigin.split()
+                    date_ar = date_time_ar[-2].split(':')
+                    time_ar = date_time_ar[-1].split(':')
+                    #print (date_time_ar, date_ar, time_ar)
+                    date_dct['yy'] = date_ar[0]
+                    date_dct['mm'] = date_ar[1]
+                    date_dct['dd'] = date_ar[2]
 
-                date_dct['hh'] = time_ar[0]
-                date_dct['mn'] = time_ar[1]
-                date_dct['sc'] = time_ar[2]
+                    date_dct['hh'] = time_ar[0]
+                    date_dct['mn'] = time_ar[1]
+                    date_dct['sc'] = time_ar[2]
 
-                print "Date exists: " + str(date_ar) + str(time_ar)
-                print "No further actions"
+                    print "Date exists: " + str(date_ar) + str(time_ar)
+                    print "No further actions"
 
-            else:
-                if jpg_exist:
-                    file_name_date=jpg_exist.group(1)
-                elif png_exist:
-                    file_name_date=png_exist.group(1)
-                elif mp4_exist:
-                    file_name_date=mp4_exist.group(2)
+                else:
+                    if jpg_exist:
+                        file_name_date=jpg_exist.group(1)
+                    elif png_exist:
+                        file_name_date=png_exist.group(1)
+                    elif mp4_exist:
+                        file_name_date=mp4_exist.group(2)
 
-                date_dct['yy'] = file_name_date[0:4]
-                date_dct['mm'] = file_name_date[4:6]
-                date_dct['dd'] = file_name_date[6:8]
-                ''' No change
-                date_dct['hh']
-                date_dct['mn']
-                date_dct['sc']
-                '''
-                composed_date= composeDateStr(date_dct)
-                print "Date NOT exists: composed date: " + composed_date
-                exifToolsetField('-CreateDate="{0}"'.format(composed_date), full_path)
-                exifToolsetField('-ModifyDate="{0}"'.format(composed_date), full_path)
-                exifToolsetField('-dateTimeOriginal="{0}"'.format(composed_date), full_path)
-
-                print "JPG/PNG/MP4 Exif-modified"
-
-                if png_exist:
+                    date_dct['yy'] = file_name_date[0:4]
+                    date_dct['mm'] = file_name_date[4:6]
+                    date_dct['dd'] = file_name_date[6:8]
+                    ''' No change
+                    date_dct['hh']
+                    date_dct['mn']
+                    date_dct['sc']
                     '''
-                    Write all Date
-                    exiftool "-system:FileModifyDate"
-                    exiftool -time:all -a -G0:1 -s a.mp4
-                    [File:System]   FileModifyDate                  : 2013:04:28 09:35:16+12:00
-                    [File:System]   FileAccessDate                  : 2013:04:29 14:06:03+12:00
-                    [File:System]   FileCreateDate                  : 2013:04:29 14:06:03+12:00
-                    '''
-                    exifToolsetField('-system:FileModifyDate="{0}"'.format(composed_date), full_path)
-                    #exifToolsetField('-system:FileAccessDate="{0}"'.format(composed_date), full_path)
-                    #in-accessible
-                    exifToolsetField('-system:FileCreateDate="{0}"'.format(composed_date), full_path)
+                    composed_date= composeDateStr(date_dct)
+                    print "Date NOT exists: composed date: " + composed_date
+                    exifToolsetField('-CreateDate="{0}"'.format(composed_date), full_path)
+                    exifToolsetField('-ModifyDate="{0}"'.format(composed_date), full_path)
+                    exifToolsetField('-dateTimeOriginal="{0}"'.format(composed_date), full_path)
 
-                    print "PNG additional modification: FileModifyDate, FileCreateDate"
+                    print "JPG/PNG/MP4 Exif-modified"
+
+                    if png_exist:
+                        '''
+                        Write all Date
+                        exiftool "-system:FileModifyDate"
+                        exiftool -time:all -a -G0:1 -s a.mp4
+                        [File:System]   FileModifyDate                  : 2013:04:28 09:35:16+12:00
+                        [File:System]   FileAccessDate                  : 2013:04:29 14:06:03+12:00
+                        [File:System]   FileCreateDate                  : 2013:04:29 14:06:03+12:00
+                        '''
+                        exifToolsetField('-system:FileModifyDate="{0}"'.format(composed_date), full_path)
+                        #exifToolsetField('-system:FileAccessDate="{0}"'.format(composed_date), full_path)
+                        #in-accessible
+                        exifToolsetField('-system:FileCreateDate="{0}"'.format(composed_date), full_path)
+
+                        print "PNG additional modification: FileModifyDate, FileCreateDate"
 
 print "Work complete"
